@@ -26,6 +26,7 @@ with open(args.maps, "r") as f:
     maps = json.load(f)
     char_indices = maps["char_indices"]
     indices_char = dict((int(k), v) for k, v in maps["indices_char"].items())
+    maxlen = maps["maxlen"]
 
 
 def sample(a, temperature=1.0):
@@ -34,8 +35,8 @@ def sample(a, temperature=1.0):
     a = np.exp(a) / np.sum(np.exp(a))
     return np.argmax(np.random.multinomial(1, a, 1))
 
-maxlen = 40
-sentence = "**CHAR0**\n\nDark was the night"[:maxlen]
+sentence = "\n\n**CHAR0**\n\nDark was the night as sometimes whatever"[:maxlen]
+print(len(sentence))
 generated = "" + sentence
 for i in range(100):
     x = np.zeros((1, maxlen, len(char_indices)))
