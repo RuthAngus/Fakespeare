@@ -26,7 +26,6 @@ with open(args.maps, "r") as f:
     maps = json.load(f)
     char_indices = maps["char_indices"]
     indices_char = dict((int(k), v) for k, v in maps["indices_char"].items())
-    maxlen = maps["maxlen"]
 
 
 def sample(a, temperature=1.0):
