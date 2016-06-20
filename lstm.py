@@ -59,6 +59,7 @@ model.add(Dense(len(chars)))
 model.add(Activation('softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
+os.makedirs(outdir, exist_ok=True)
 with open(os.path.join(outdir, 'architecture.json'), 'w') as f:
     f.write(model.to_json())
 
