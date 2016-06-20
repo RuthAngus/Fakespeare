@@ -6,6 +6,7 @@ from __future__ import division, print_function
 import os
 import sys
 import glob
+import json
 import random
 import argparse
 import numpy as np
@@ -63,9 +64,15 @@ model.add(Dense(len(chars)))
 model.add(Activation('softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
+
+# Save the model.
 os.makedirs(outdir, exist_ok=True)
 with open(os.path.join(outdir, 'architecture.json'), 'w') as f:
     f.write(model.to_json())
+with open(os.path.join(outdir, 'maps.json'), 'w') as f:
+    json.dump(dict(char_indices=char_indices, indices_char=indices_char,
+                   maxlen=maxlen, step=step), f)
+
 
 def sample(a, temperature=1.0):
     # helper function to sample an index from a probability array
