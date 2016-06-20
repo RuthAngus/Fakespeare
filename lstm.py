@@ -7,6 +7,7 @@ import os
 import sys
 import glob
 import random
+import argparse
 import numpy as np
 
 from keras.layers import LSTM
@@ -15,8 +16,11 @@ from keras.layers import Dense, Activation, Dropout
 
 from fakespeare.play import format_play
 
-outdir = "results"
-
+parser = argparse.ArgumentParser()
+parser.add_argument("-o", "--output-dir", default="output",
+                    help="the output directory")
+args = parser.parse_args()
+outdir = args.output_dir
 
 text = []
 for fn in glob.glob("plays/*.txt")[:3]:
