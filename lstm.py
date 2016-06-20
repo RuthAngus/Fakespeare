@@ -3,6 +3,7 @@
 
 from __future__ import division, print_function
 
+import os
 import sys
 import glob
 import random
@@ -13,6 +14,8 @@ from keras.models import Sequential
 from keras.layers import Dense, Activation, Dropout
 
 from fakespeare.play import format_play
+
+outdir = "results"
 
 
 text = []
@@ -56,6 +59,8 @@ model.add(Dense(len(chars)))
 model.add(Activation('softmax'))
 
 model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
+with open(os.path.join(outdir, 'architecture.json'), 'w') as f:
+    f.write(model.to_json())
 
 def sample(a, temperature=1.0):
     # helper function to sample an index from a probability array
@@ -69,6 +74,9 @@ for iteration in range(1, 60):
     print('-' * 50)
     print('Iteration', iteration)
     model.fit(X, y, batch_size=128, nb_epoch=1)
+
+    model.save_weights(os.path.join(outdir,
+                                    'weights_{0:05d}.h5'.format(iteration)))
 
     start_index = random.randint(0, len(text) - maxlen - 1)
 
