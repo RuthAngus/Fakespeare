@@ -4,10 +4,8 @@
 from __future__ import division, print_function
 
 import os
-import sys
 import glob
 import json
-import random
 import argparse
 import numpy as np
 
@@ -37,7 +35,7 @@ indices_char = dict((i, c) for i, c in enumerate(chars))
 # cut the text in semi-redundant sequences of maxlen characters
 maxlen = 40
 step = 3
-batch_size = 1
+batch_size = 128
 sentences = []
 next_chars = []
 for i in range(0, len(text) - maxlen, step):
