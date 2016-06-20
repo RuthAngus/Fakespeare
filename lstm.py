@@ -24,7 +24,7 @@ args = parser.parse_args()
 outdir = args.output_dir
 
 text = []
-for fn in glob.glob("plays/*.txt")[:2]:
+for fn in glob.glob("plays/*.txt"):
     with open(fn, "r") as f:
         text.append(format_play(f.read()))
 text = "\n\n".join(text)
@@ -94,37 +94,6 @@ for iteration in range(1, 60):
     print('-' * 50)
     print('Iteration', iteration)
     model.fit(X, y, batch_size=batch_size, nb_epoch=1, shuffle=False)
-    # for i in range(0, len(X), batch_size):
-    #     model.train_on_batch(X[i:i+batch_size], y[i:i+batch_size])
-
     model.save_weights(os.path.join(outdir,
                                     'weights_{0:05d}.h5'.format(iteration)))
     model.reset_states()
-
-#     start_index = random.randint(0, len(text) - maxlen - 1)
-
-#     for diversity in [0.2, 0.5, 1.0, 1.2]:
-#         print()
-#         print('----- diversity:', diversity)
-
-#         generated = ''
-#         sentence = text[start_index: start_index + maxlen]
-#         generated += sentence
-#         print('----- Generating with seed: "' + sentence + '"')
-#         sys.stdout.write(generated)
-
-#         for i in range(400):
-#             x = np.zeros((1, maxlen, len(chars)))
-#             for t, char in enumerate(sentence):
-#                 x[0, t, char_indices[char]] = 1.
-
-#             preds = model.predict(x, verbose=0)[0]
-#             next_index = sample(preds, diversity)
-#             next_char = indices_char[next_index]
-
-#             generated += next_char
-#             sentence = sentence[1:] + next_char
-
-#             sys.stdout.write(next_char)
-#             sys.stdout.flush()
-#         print()
