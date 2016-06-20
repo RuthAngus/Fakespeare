@@ -23,7 +23,7 @@ args = parser.parse_args()
 outdir = args.output_dir
 
 text = []
-for fn in glob.glob("plays/*.txt")[:3]:
+for fn in glob.glob("plays/*.txt"):
     with open(fn, "r") as f:
         text.append(format_play(f.read()))
 text = "\n".join(text)
