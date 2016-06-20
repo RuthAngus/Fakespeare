@@ -37,7 +37,7 @@ indices_char = dict((i, c) for i, c in enumerate(chars))
 # cut the text in semi-redundant sequences of maxlen characters
 maxlen = 40
 step = 3
-batch_size = 128
+batch_size = 1
 sentences = []
 next_chars = []
 for i in range(0, len(text) - maxlen, step):
@@ -64,7 +64,6 @@ model = Sequential()
 model.add(LSTM(512, return_sequences=True, stateful=True,
                batch_input_shape=(batch_size, maxlen, len(chars))))
 model.add(Dropout(0.2))
-# model.add(LSTM(512, return_sequences=False))
 model.add(LSTM(512, return_sequences=False, stateful=True,
                batch_input_shape=(batch_size, maxlen, len(chars))))
 model.add(Dropout(0.2))
