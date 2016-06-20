@@ -24,10 +24,10 @@ args = parser.parse_args()
 outdir = args.output_dir
 
 text = []
-for fn in glob.glob("plays/*.txt"):
+for fn in glob.glob("plays/*.txt")[:2]:
     with open(fn, "r") as f:
         text.append(format_play(f.read()))
-text = "\n".join(text)
+text = "\n\n".join(text)
 
 chars = set(text)
 print('total chars:', len(chars))
@@ -37,6 +37,7 @@ indices_char = dict((i, c) for i, c in enumerate(chars))
 # cut the text in semi-redundant sequences of maxlen characters
 maxlen = 40
 step = 3
+batch_size = 128
 sentences = []
 next_chars = []
 for i in range(0, len(text) - maxlen, step):
@@ -52,13 +53,20 @@ for i, sentence in enumerate(sentences):
         X[i, t, char_indices[char]] = 1
     y[i, char_indices[next_chars[i]]] = 1
 
+maxdata = len(X) // batch_size * batch_size
+X = X[:maxdata]
+y = y[:maxdata]
+
 
 # build the model: 2 stacked LSTM
 print('Build model...')
 model = Sequential()
-model.add(LSTM(512, return_sequences=True, input_shape=(maxlen, len(chars))))
+model.add(LSTM(512, return_sequences=True, stateful=True,
+               batch_input_shape=(batch_size, maxlen, len(chars))))
 model.add(Dropout(0.2))
-model.add(LSTM(512, return_sequences=False))
+# model.add(LSTM(512, return_sequences=False))
+model.add(LSTM(512, return_sequences=False, stateful=True,
+               batch_input_shape=(batch_size, maxlen, len(chars))))
 model.add(Dropout(0.2))
 model.add(Dense(len(chars)))
 model.add(Activation('softmax'))
@@ -71,7 +79,7 @@ with open(os.path.join(outdir, 'architecture.json'), 'w') as f:
     f.write(model.to_json())
 with open(os.path.join(outdir, 'maps.json'), 'w') as f:
     json.dump(dict(char_indices=char_indices, indices_char=indices_char,
-                   maxlen=maxlen, step=step), f)
+                   maxlen=maxlen, step=step, batch_size=batch_size), f)
 
 
 def sample(a, temperature=1.0):
@@ -85,35 +93,38 @@ for iteration in range(1, 60):
     print()
     print('-' * 50)
     print('Iteration', iteration)
-    model.fit(X, y, batch_size=128, nb_epoch=1)
+    model.fit(X, y, batch_size=batch_size, nb_epoch=1, shuffle=False)
+    # for i in range(0, len(X), batch_size):
+    #     model.train_on_batch(X[i:i+batch_size], y[i:i+batch_size])
 
     model.save_weights(os.path.join(outdir,
                                     'weights_{0:05d}.h5'.format(iteration)))
+    model.reset_states()
 
-    start_index = random.randint(0, len(text) - maxlen - 1)
+#     start_index = random.randint(0, len(text) - maxlen - 1)
 
-    for diversity in [0.2, 0.5, 1.0, 1.2]:
-        print()
-        print('----- diversity:', diversity)
+#     for diversity in [0.2, 0.5, 1.0, 1.2]:
+#         print()
+#         print('----- diversity:', diversity)
 
-        generated = ''
-        sentence = text[start_index: start_index + maxlen]
-        generated += sentence
-        print('----- Generating with seed: "' + sentence + '"')
-        sys.stdout.write(generated)
+#         generated = ''
+#         sentence = text[start_index: start_index + maxlen]
+#         generated += sentence
+#         print('----- Generating with seed: "' + sentence + '"')
+#         sys.stdout.write(generated)
 
-        for i in range(400):
-            x = np.zeros((1, maxlen, len(chars)))
-            for t, char in enumerate(sentence):
-                x[0, t, char_indices[char]] = 1.
+#         for i in range(400):
+#             x = np.zeros((1, maxlen, len(chars)))
+#             for t, char in enumerate(sentence):
+#                 x[0, t, char_indices[char]] = 1.
 
-            preds = model.predict(x, verbose=0)[0]
-            next_index = sample(preds, diversity)
-            next_char = indices_char[next_index]
+#             preds = model.predict(x, verbose=0)[0]
+#             next_index = sample(preds, diversity)
+#             next_char = indices_char[next_index]
 
-            generated += next_char
-            sentence = sentence[1:] + next_char
+#             generated += next_char
+#             sentence = sentence[1:] + next_char
 
-            sys.stdout.write(next_char)
-            sys.stdout.flush()
-        print()
+#             sys.stdout.write(next_char)
+#             sys.stdout.flush()
+#         print()
