@@ -33,7 +33,7 @@ char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # cut the text in semi-redundant sequences of maxlen characters
-maxlen = 40
+maxlen = 50
 step = 3
 batch_size = 128
 sentences = []
