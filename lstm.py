@@ -4,10 +4,8 @@
 from __future__ import division, print_function
 
 import os
-import sys
 import glob
 import json
-import random
 import argparse
 import numpy as np
 
@@ -35,8 +33,9 @@ char_indices = dict((c, i) for i, c in enumerate(chars))
 indices_char = dict((i, c) for i, c in enumerate(chars))
 
 # cut the text in semi-redundant sequences of maxlen characters
-maxlen = 40
-step = 3
+maxlen = 5
+step = 1
+batch_size = 128
 sentences = []
 next_chars = []
 for i in range(0, len(text) - maxlen, step):
@@ -52,18 +51,26 @@ for i, sentence in enumerate(sentences):
         X[i, t, char_indices[char]] = 1
     y[i, char_indices[next_chars[i]]] = 1
 
+maxdata = len(X) // batch_size * batch_size
+X = X[:maxdata]
+y = y[:maxdata]
+
 
 # build the model: 2 stacked LSTM
 print('Build model...')
 model = Sequential()
-model.add(LSTM(512, return_sequences=True, input_shape=(maxlen, len(chars))))
+model.add(LSTM(512, return_sequences=True,
+               stateful=True,
+               batch_input_shape=(batch_size, maxlen, len(chars))))
 model.add(Dropout(0.2))
-model.add(LSTM(512, return_sequences=False))
+model.add(LSTM(512, return_sequences=False,
+               stateful=True,
+               batch_input_shape=(batch_size, maxlen, len(chars))))
 model.add(Dropout(0.2))
 model.add(Dense(len(chars)))
-model.add(Activation('softmax'))
+model.add(Activation("softmax"))
 
-model.compile(loss='categorical_crossentropy', optimizer='rmsprop')
+model.compile(loss="categorical_crossentropy", optimizer="rmsprop")
 
 # Save the model.
 os.makedirs(outdir, exist_ok=True)
@@ -85,35 +92,37 @@ for iteration in range(1, 60):
     print()
     print('-' * 50)
     print('Iteration', iteration)
-    model.fit(X, y, batch_size=128, nb_epoch=1)
+    model.fit(X, y, batch_size=batch_size, nb_epoch=1)
 
     model.save_weights(os.path.join(outdir,
                                     'weights_{0:05d}.h5'.format(iteration)))
 
-    start_index = random.randint(0, len(text) - maxlen - 1)
+    model.reset_states()
 
-    for diversity in [0.2, 0.5, 1.0, 1.2]:
-        print()
-        print('----- diversity:', diversity)
+    # start_index = random.randint(0, len(text) - maxlen - 1)
 
-        generated = ''
-        sentence = text[start_index: start_index + maxlen]
-        generated += sentence
-        print('----- Generating with seed: "' + sentence + '"')
-        sys.stdout.write(generated)
+    # for diversity in [0.2, 0.5, 1.0, 1.2]:
+    #     print()
+    #     print('----- diversity:', diversity)
 
-        for i in range(400):
-            x = np.zeros((1, maxlen, len(chars)))
-            for t, char in enumerate(sentence):
-                x[0, t, char_indices[char]] = 1.
+    #     generated = ''
+    #     sentence = text[start_index: start_index + maxlen]
+    #     generated += sentence
+    #     print('----- Generating with seed: "' + sentence + '"')
+    #     sys.stdout.write(generated)
 
-            preds = model.predict(x, verbose=0)[0]
-            next_index = sample(preds, diversity)
-            next_char = indices_char[next_index]
+    #     for i in range(400):
+    #         x = np.zeros((1, maxlen, len(chars)))
+    #         for t, char in enumerate(sentence):
+    #             x[0, t, char_indices[char]] = 1.
 
-            generated += next_char
-            sentence = sentence[1:] + next_char
+    #         preds = model.predict(x, verbose=0)[0]
+    #         next_index = sample(preds, diversity)
+    #         next_char = indices_char[next_index]
 
-            sys.stdout.write(next_char)
-            sys.stdout.flush()
-        print()
+    #         generated += next_char
+    #         sentence = sentence[1:] + next_char
+
+    #         sys.stdout.write(next_char)
+    #         sys.stdout.flush()
+    #     print()
