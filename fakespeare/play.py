@@ -22,10 +22,11 @@ def format_play(txt):
         txt = txt.replace("**"+k+"**", "**"+v+"**")
     for k, v in chars.items():
         txt = txt.replace(k, v)
-    txt = "\n".join(filter(lambda x: not x.startswith("#"), txt.splitlines()))
-    return txt.strip()
+    lines = ["</scene>\n\n<scene>" if "#" in line else line
+             for line in txt.splitlines()]
+    return "\n".join(["<scene>"] + lines[3:] + ["</scene>"]).strip()
 
 
 if __name__ == "__main__":
     txt = open("plays/Antony_and_Cleopatra.txt", "r").read()
-    print(format_play(txt)[:1000])
+    print(format_play(txt)[-1000:])
