@@ -27,6 +27,7 @@ with open(args.maps, "r") as f:
     char_indices = maps["char_indices"]
     indices_char = dict((int(k), v) for k, v in maps["indices_char"].items())
     maxlen = maps["maxlen"]
+    batch_size = maps["batch_size"]
 
 
 def sample(a, temperature=1.0):
