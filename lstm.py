@@ -78,7 +78,7 @@ with open(os.path.join(outdir, 'architecture.json'), 'w') as f:
     f.write(model.to_json())
 with open(os.path.join(outdir, 'maps.json'), 'w') as f:
     json.dump(dict(char_indices=char_indices, indices_char=indices_char,
-                   maxlen=maxlen, step=step), f)
+                   maxlen=maxlen, step=step, batch_size=batch_size), f)
 
 
 def sample(a, temperature=1.0):
