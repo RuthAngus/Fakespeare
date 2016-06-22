@@ -3,6 +3,7 @@
 
 from __future__ import division, print_function
 
+import sys
 import json
 import argparse
 import numpy as np
@@ -46,6 +47,8 @@ generated = "" + sentence
 sentence = sentence[-maxlen:]
 if len(sentence) < maxlen:
     sentence = ("\n" * (maxlen - len(sentence))) + sentence
+sys.stdout.write(generated)
+sys.stdout.flush()
 for i in range(args.nchars):
     x = np.zeros((1, maxlen, len(char_indices)))
     for t, char in enumerate(sentence):
@@ -57,6 +60,10 @@ for i in range(args.nchars):
     generated += next_char
     sentence = sentence[1:] + next_char
 
+    sys.stdout.write(next_char)
+    sys.stdout.flush()
+
 with open(args.output, "w") as f:
     f.write(generated)
-print(generated)
+print()
+# print(generated)
