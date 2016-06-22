@@ -20,4 +20,5 @@ RUNDIR=$SCRATCH/Fakespeare/results/${PBS_JOBID/.*}
 mkdir -p $RUNDIR
 
 cd $SRCDIR
-THEANO_FLAGS=device=gpu python lstm.py -o $RUNDIR
+THEANO_FLAGS=device=gpu python train.py -o $RUNDIR
+
